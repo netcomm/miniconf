@@ -38,7 +38,7 @@ in conf directory, you can edit application.conf for custom need.
 
 Reference configuration
      
-      aakka {
+      akka {
          loggers = ["akka.event.slf4j.Slf4jLogger"]
          loglevel = "DEBUG"
          stdout-loglevel = "DEBUG"
@@ -57,9 +57,9 @@ Reference configuration
  	       snapshot-store
  	       {
  	         local
- 		 			 {
- 		   		   dir = "../target/snapshots"
- 					 }
+ 		 		{
+ 		   		 dir = "../target/snapshots"
+ 				}
  	       }
          }
       }
@@ -79,4 +79,18 @@ Client jar
 		// create MiniConfClient instance
 		val theMiniConfClient = new MiniConfClient("http://localhost:8810")
 		// saveOneConfItem
-  	theMiniConfClient.saveOneConfItem("g2", "k1", "gv2")
+		theMiniConfClient.saveOneConfItem("g2", "k1", "gv2")
+
+
+### Get One Configuration
+		val theMiniConfClient = new MiniConfClient("http://localhost:8810")
+  	theMiniConfClient.getOneConfItem("g2", "k1")
+
+
+### Register Data modified Listener
+		val theMiniConfClient = new MiniConfClient("http://localhost:8810")
+		theMiniConfClient.registerListener("g2", "k1", {newValue => System.out.println("conf have modified "+newValue)})
+
+License
+--------------
+miniconf is licensed under APL 2.0.
