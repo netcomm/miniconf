@@ -22,10 +22,10 @@ Usage
 -----------
 
 ### server side
-you can download the server.zip, unzip it,in bin directory use 'miniconfServer.sh'(in linux) or 'miniconfServer.bat'(in windows),it will startup a an embedded Jetty server,the default port is 8810.
+you can download the server.zip, unzip it,in bin directory use 'miniconfServer.sh'(in linux) or 'miniconfServer.bat'(in windows),it will startup a an embedded Jetty server(jdk1.7 is required).
 
 ### web page
-- the main page url is http://your server ip:8810/
+- the main page url is http://your server ip:8810/ (the default port is 8810)
 
 ![indexpage](images/index.png "index")
 
@@ -84,12 +84,18 @@ Client jar
 
 ### Get One Configuration
 		val theMiniConfClient = new MiniConfClient("http://localhost:8810")
-  	theMiniConfClient.getOneConfItem("g2", "k1")
+		theMiniConfClient.getOneConfItem("g2", "k1")
 
 
 ### Register Data modified Listener
 		val theMiniConfClient = new MiniConfClient("http://localhost:8810")
 		theMiniConfClient.registerListener("g2", "k1", {newValue => System.out.println("conf have modified "+newValue)})
+
+Download
+--------------
+server side : https://drive.google.com/file/d/0B_ezlceLhFZKNXo3YWp5ZkUzd00/edit?usp=sharing
+
+client jar :  https://drive.google.com/file/d/0B_ezlceLhFZKRHl3QmpoOEpUSDg/edit?usp=sharing
 
 License
 --------------

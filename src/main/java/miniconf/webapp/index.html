@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>all configures detail page</title>
+    <script src="js/jquery.js"></script>
+	<script src="js/bootstrap-pagy.js"></script>
+	<script src="js/bootstrap-modalmanager.js"></script>
+    <script src="js/bootstrap-modal.js"></script>
+    <script src="js/dataTables.bootstrap.js"></script>
+    <script src="js/jquery.dataTables.min.js"></script>
+    <script src="js/prettify.js"></script>
+    <script src="js/run_prettify.js"></script>
+
+	<link rel="stylesheet" href="css/bootstrap.css" type="text/css">
+	<link rel="stylesheet" href="css/bootstrap-responsive.css">
+  	<link rel="stylesheet" href="css/bootstrap-modal.css">
+  	<link rel="stylesheet" href="css/prettify.css">
+    <link rel="stylesheet" href="css/dataTables.bootstrap.css">
+
+		<style type="text/css" media="all">
+		  body {
+		    padding-top: 40px;
+		  }
+		  
+		  .text-center { 
+		    text-align: center; 
+		  }
+		  
+		  .marketing h1 {
+		    font-size: 50px;
+		    font-weight: lighter;
+		    line-height: 1;
+		  }
+		
+		  .marketing p {
+		    font-size: 18px;
+		  }
+
+          .table th, .table td {
+                text-align: center;
+          }
+		</style>
+		
+    <script type="text/javascript">
+        var table;
+        var curPageNum = 0;
+
+        Date.prototype.Format = function(fmt)
+        { //author: meizz
+            var o = {
+                "M+" : this.getMonth()+1,
+                "d+" : this.getDate(),
+                "h+" : this.getHours(),
+                "m+" : this.getMinutes(),
+                "s+" : this.getSeconds(),
+                "q+" : Math.floor((this.getMonth()+3)/3),
+                "S"  : this.getMilliseconds()
+            };
+            if(/(y+)/.test(fmt))
+                fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));
+            for(var k in o)
+                if(new RegExp("("+ k +")").test(fmt))
+                    fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+            return fmt;
+        }
+
+        function editOneItem(hrefIns)
+        {
+            var tmpParms = hrefIns.getAttribute("parms");
+            var tmpStrs = tmpParms.split(",");
+            $("#addItem_group").val(tmpStrs[0]);
+            $("#addItem_key").val(tmpStrs[1]);
+            $("#addItem_value").val(tmpStrs[2]);
+            $('#stack1').modal('show');
+        }
+
+        function doDelete(thisParm)
+        {
+            $('#alertDeleteItem').modal('hide');
+            var tmpParms = thisParm.getAttribute("parms");
+            var tmpStrs = tmpParms.split(",");
+
+            jQuery.ajax({
+                type:"GET",
+                url: "/miniConf/deleteOneConfItem?group="
+                        +tmpStrs[0]+"&key="+tmpStrs[1]
+                        +"&value="+tmpStrs[2],
+                dataType:"text",
+                global:false,
+                success: function(data){
+                    if ("" == data)
+                    {
+                        getTableDataFromServer(curPageNum);
+                    }
+                },
+                error: function(XMLHttpRequest, textStatus, errorThrown)
+                {
+                    alert("deleteOneItem failed ! error code "+XMLHttpRequest.status);
+                }
+            });
+        }
+
+        function deleteOneItem(hrefIns)
+        {
+            $('#deleteButton')[0].setAttribute("parms", hrefIns.getAttribute("parms"));
+
+            $('#alertDeleteItem').modal({
+                backdrop:true,
+                keyboard:true,
+                show:true
+            });
+        }
+
+        function getTableDataFromServer(curPageNumParm)
+        {
+            curPageNum = curPageNumParm;
+            jQuery.ajax({
+                type:"GET",
+                url: "/miniConf/getCurPagination?curPageNum="+curPageNum
+                     +"&searchGroup="+$("#searchGroupInput").val()
+                     +"&searchKey="+$("#searchKeyInput").val(),
+                dataType:"json",
+                global:false,
+                success: function(data){
+                    if (table == null)
+                    {
+                        table = $('#tableIns').DataTable({
+                            paging: false,
+                            searching: false,
+                            "info": false,
+                            data: data.oneBatchItems,
+                            "columnDefs": [
+                                {
+                                    "targets": 4,
+                                    "data": "description",
+                                    "render": function (data, type, full, meta) {
+                                        return '<a parms = "'+full+'" style="cursor:hand" onclick="editOneItem(this); return false;">Update</a>  <a parms="'+full+'" style="cursor:hand" onclick="deleteOneItem(this); return false;">Delete</a>';
+                                    }
+                                },
+                                {
+                                    "targets": 2,
+                                    "data": "2",
+                                    "render": function (data, type, full, meta ) {
+                                        return type === 'display' && data.length >= 20 ?
+                                                '<span title="'+data+'">'+data.substr( 0, 18)+'...</span>': data;
+                                    }
+                                }
+                            ]
+                        });
+
+                        paginationIns = $(".pagination:eq(0)").pagy({
+                            totalPages: data.totalPageNum,
+                            currentPage: 1,
+                            outerWindow: 1,
+                            first: null,
+                            last: null,
+                            page : function(pageId){
+                                getTableDataFromServer(pageId - 1);
+                                return true;
+                            }
+                        });
+                    }
+                    else
+                    {
+                        table.clear().rows.add(data.oneBatchItems).draw();
+                        paginationIns.data("bs.pagy").options.totalPages = data.totalPageNum;
+                        paginationIns.data("bs.pagy").options.currentPage = curPageNum + 1;
+                        paginationIns.data("bs.pagy").$ul.empty();
+                        paginationIns.data("bs.pagy").render();
+                    }
+                },
+                error: function(XMLHttpRequest, textStatus, errorThrown)
+                {
+                    alert("getTableDataFromServer failed ! error code "+XMLHttpRequest.status);
+                }
+            });
+        }
+
+		$(function() {
+            getTableDataFromServer(0);
+		})
+
+        function saveOneItemConf()
+        {
+            jQuery.ajax({
+                type:"POST",
+                url: "/miniConf/saveOneConfItem",
+                data:"{\"group\":\""+$("#addItem_group").val()+"\","+
+                      "\"key\":\""+$("#addItem_key").val()+"\","+
+                      "\"value\":\""+$("#addItem_value").val()+"\"," +
+                      "\"timestamp\":\""+new Date().Format("yyyyMMdd hh:mm:ss")+"\"}"
+                     ,
+                dataType:"text",
+                global:false,
+                success: function(data){
+                    if ("" == data)
+                    {
+                        getTableDataFromServer(curPageNum);
+                        $('#stack1').modal('hide');
+                    }
+                },
+                error: function(XMLHttpRequest, textStatus, errorThrown)
+                {
+                    alert("save failed ! error code "+XMLHttpRequest.status);
+                }
+            });
+        }
+	</script>
+</head>
+<body>
+<div class="container">
+	<div class="marketing">
+        <h1>MiniConfigure Center</h1>
+        <p class="muted">build from Akka persistence, Spray, Jetty and more.</p>
+ 	</div>
+	
+	<p>
+	  <div class="row">	
+		  <div class="span12">    
+		    <div class="row">
+		      <div class="span2">
+		      	<div class ="well ops-sidebar affix-top">
+					<div class="stackable">
+		  		        <div class="text-center">
+		  					<button class="btn btn-primary btn-large" data-toggle="modal" href="#stack1">Add Item</button>
+		  				</div>
+	  				</div>
+
+					<div id="stack1" class="modal hide fade" tabindex="-1" data-focus-on="input:first" style="display: none; margin-top: -149.5px;" aria-hidden="true">
+							  <div class="modal-header">
+							    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+							    <h3>Add New Item</h3>
+							  </div>
+							  <div class="modal-body">
+							  <br>
+							    <label class="span1">group</label> <input class="span4" id="addItem_group" type="text" value="DEFAULT_GROUP">
+							    <br>
+							    <label class="span1">key</label> <input class="span4" id="addItem_key" type="text" value="DEFAULT_KEY">
+							    <br>
+							    <label class="span1">value</label> <textarea class="span4" id="addItem_value" placeholder="content" rows="10"></textarea>
+							  </div>
+							  <div class="modal-footer">
+							  	<button type="button" class="btn btn-primary" onclick="saveOneItemConf();">Save</button>
+							    <button type="button" data-dismiss="modal" class="btn">Close</button>
+							  </div>
+					</div>
+
+                    <div id="alertDeleteItem" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
+                            <h3 id="myModalLabel">Deletion</h3>
+                        </div>
+                        <div class="modal-body">
+                            <p>Confirm the deletion?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button id = "deleteButton" parms = "" type="button" class="btn btn-primary" onclick="doDelete(this);">Confirm</button>
+                            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                        </div>
+                    </div>
+				</div>
+		      </div>
+		      
+		      <div class="span10">
+		      	    <div class="row">
+				           group:
+						         <input id ="searchGroupInput" class="form-control" value = ""/>
+						   key:
+						         <input id = "searchKeyInput" class="form-control" value=""/>
+						   <button type="submit" class="btn btn-success" onclick="getTableDataFromServer(0);">search</button>
+				    </div>
+
+                    <div class="pagination">
+                      <ul></ul>
+                    </div>
+
+				    <div class="row">    
+					    <table id ="tableIns" class="table table-hover">
+						    <thead>
+						    <tr>
+						        <th>group</th>
+						        <th>key</th>
+						        <th>value</th>
+						        <th>time</th>
+						        <th>operation</th>
+						    </tr>
+						    </thead>
+						    <tbody>
+
+					    	</tbody>
+						</table>
+					</div>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+	</p>
+</div>
+</body>
+</html>
