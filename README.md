@@ -1,0 +1,4 @@
+miniconf
+========
+
+Centralized configuration management
