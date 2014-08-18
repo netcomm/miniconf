@@ -22,7 +22,7 @@ Usage
 -----------
 
 ### server side
-you can download the server.zip, unzip it,in bin directory use 'miniconfServer.sh'(in linux) or 'miniconfServer.bat'(in windows),it will startup a an embedded Jetty server(jdk1.7 is required).
+you can download the server.zip, unzip it,in bin directory use 'miniconfServer.sh'(in linux) or 'miniconfServer.bat'(in windows),it will startup an embedded Jetty server(jdk1.7 is required).
 
 ### web page
 - the main page url is http://your server ip:8810/ (the default port is 8810)
