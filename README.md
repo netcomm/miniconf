@@ -57,9 +57,9 @@ Reference configuration
  	       snapshot-store
  	       {
  	         local
- 		 {
- 		   dir = "../target/snapshots"
- 		}
+ 		 			 {
+ 		   		   dir = "../target/snapshots"
+ 					 }
  	       }
          }
       }
@@ -75,3 +75,8 @@ Reference configuration
 
 Client jar
 --------------
+### Add One Configuration
+		// create MiniConfClient instance
+		val theMiniConfClient = new MiniConfClient("http://localhost:8810")
+		// saveOneConfItem
+  	theMiniConfClient.saveOneConfItem("g2", "k1", "gv2")
