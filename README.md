@@ -1,4 +1,4 @@
 miniconf
 ========
 
-Centralized configuration management
+test Centralized configuration management
