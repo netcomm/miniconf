@@ -91,12 +91,6 @@ Client jar
 		val theMiniConfClient = new MiniConfClient("http://localhost:8810")
 		theMiniConfClient.registerListener("g2", "k1", {newValue => System.out.println("conf have modified "+newValue)})
 
-Download
---------------
-server side : https://drive.google.com/file/d/0B_ezlceLhFZKNXo3YWp5ZkUzd00/edit?usp=sharing
-
-client jar :  https://drive.google.com/file/d/0B_ezlceLhFZKRHl3QmpoOEpUSDg/edit?usp=sharing
-
 License
 --------------
-miniconf is licensed under APL 2.0.
+This code is open source software licensed under the Apache 2.0 License.
