@@ -20,10 +20,10 @@ Mini Configuration Center(miniconf) consists of two parts: server side and clien
 Usage
 -----------
 ### server side
-you can download the server.zip, unzip it,in bin directory use 'miniconfServer.sh'(in linux) or 'miniconfServer.bat'(in windows),it will startup an embedded Jetty server(jdk1.7 is required).
+the main class is miniconf.server.MainApp, you can run it.
 
 ### web page
-- the main page url is http://your server ip:8810/ (the default port is 8810)
+- the main page url is http://your server ip:9000/ (the default port is 9000)
 
 ![indexpage](images/index.png "index")
 
@@ -35,41 +35,31 @@ you can download the server.zip, unzip it,in bin directory use 'miniconfServer.s
 in conf directory, you can edit application.conf for custom need.
 
 Reference configuration
+
+       |akka.cluster {
+	  seed-nodes = [
+	    "akka.tcp://miniconf-system@127.0.0.1:2551"]
+	
+	  auto-down-unreachable-after = 30s
+	}
+	
+	akka {
+	  remote {
+	    log-remote-lifecycle-events = off
+	    netty.tcp {
+	      hostname = "127.0.0.1"
+	      port = 2551
+	    }
+	  }
+	}
+	
+	miniconf {
+	  httpService {
+	    interface = "127.0.0.1"
+	    port      = 9000
+	  }
+	}
      
-      akka {
-         loggers = ["akka.event.slf4j.Slf4jLogger"]
-         loglevel = "DEBUG"
-         stdout-loglevel = "DEBUG"
-         
-         persistence
-         {
- 	       journal
- 	       {
- 	         leveldb
- 	         {
- 	           dir = "../target/journal"
- 	           native = on
- 	         }
- 	       }
-        
- 	       snapshot-store
- 	       {
- 	         local
- 		 		{
- 		   		 dir = "../target/snapshots"
- 				}
- 	       }
-         }
-      }
-
-      spray.servlet {
-        boot-class = "miniconf.server.Boot"
-        request-timeout = 6s
-      }
-
-      miniconf {
-          jetty_server_port = 8810
-      }  
 
 Client jar
 --------------
