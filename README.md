@@ -3,16 +3,15 @@ Mini Configuration Center
 
 Overview
 ----------
-
 Centralized configuration management, including online editing, persistence, especially the change of the configuration data can be perceived in runtime.
 
-we use Spray / Akka persistence and using CQRS mode. thanks for Akka persistence, it make the source code number decreased dramatically,the core code number no more than 300 lines. 
+we use Akka persistence/Http/Distributed Data. thanks for Akka toolkit, it make the source code number decreased dramatically,the core code number no more than 300 lines. 
 
 a Configuration = Group  +  Key  +  Value
 
 Mini Configuration Center(miniconf) consists of two parts: server side and client jar. 
 
-- `server side` expose RESTful service(use Spray / embedded jetty) and use local leveldb to save Add/Edit/Query configuration event and view's snapshot.
+- `server side` expose RESTful service(use Akka Http) and use local/distributed akka persistence to save Add/Edit/Query configuration events and use akka Distributed Data to disseminate configuration events between cluster nodes.
 
 - `client jar` provide scala and java interface.
 
@@ -20,7 +19,6 @@ Mini Configuration Center(miniconf) consists of two parts: server side and clien
 
 Usage
 -----------
-
 ### server side
 you can download the server.zip, unzip it,in bin directory use 'miniconfServer.sh'(in linux) or 'miniconfServer.bat'(in windows),it will startup an embedded Jetty server(jdk1.7 is required).
 
@@ -90,6 +88,10 @@ Client jar
 ### Register Data modified Listener
 		val theMiniConfClient = new MiniConfClient("http://localhost:8810")
 		theMiniConfClient.registerListener("g2", "k1", {newValue => System.out.println("conf have modified "+newValue)})
+
+Features
+--------------
+
 
 License
 --------------
