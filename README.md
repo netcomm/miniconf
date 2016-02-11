@@ -26,17 +26,13 @@ the main class is miniconf.server.MainApp, you can run it.
 - the main page url is http://your server ip:9000/ (the default port is 9000)
 
 ![indexpage](images/index.png "index")
-
-- Add/Edit One Configuration
-
-![indexpage](images/add.png "index")
-
 ###conf
 in conf directory, you can edit application.conf for custom need.
 
 Reference configuration
-
-       |akka.cluster {
+       
+       # cluster configure detail
+       akka.cluster {
 	  seed-nodes = [
 	    "akka.tcp://miniconf-system@127.0.0.1:2551"]
 	
@@ -53,6 +49,7 @@ Reference configuration
 	  }
 	}
 	
+	# http service configure detail
 	miniconf {
 	  httpService {
 	    interface = "127.0.0.1"
@@ -60,7 +57,6 @@ Reference configuration
 	  }
 	}
      
-
 Client jar
 --------------
 ### Add One Configuration
