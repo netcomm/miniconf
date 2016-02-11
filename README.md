@@ -77,12 +77,15 @@ Client jar
 
 Release Notes
 --------------
-### 0.1
-use Akka HTTP to expose Rest Services.
+### 0.1 (2014-8)
+* use Spray and Jetty to expose Rest Services.
+* use Akka Persistence and CQRS to save all configures in local.
 
-2.use Akka Persistence to persist all configures in local.
-
-3.use Akka Distributed Data to disseminate configuration events between cluster nodes.
+### 0.2 (2016-2)
+* use Akka HTTP to expose Rest Services.
+* use Akka Persistence to persist all configures in local.
+* use Akka Distributed Data to disseminate configuration events between cluster nodes.
+* use Multi Node Testing to do integration test.
 
 License
 --------------
