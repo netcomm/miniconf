@@ -77,7 +77,9 @@ Client jar
 
 Features
 --------------
-
+1.use Akka HTTP to expose Rest Services;
+2.use Akka Persistence to persist all configures in local.
+3.use Akka Distributed Data to disseminate configuration events between cluster nodes.
 
 License
 --------------
