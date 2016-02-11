@@ -61,24 +61,26 @@ Client jar
 --------------
 ### Add One Configuration
 		// create MiniConfClient instance
-		val theMiniConfClient = new MiniConfClient("http://localhost:8810")
+		val theMiniConfClient = new MiniConfClient("http://localhost:9000")
 		// saveOneConfItem
 		theMiniConfClient.saveOneConfItem("g2", "k1", "gv2")
 
 
 ### Get One Configuration
-		val theMiniConfClient = new MiniConfClient("http://localhost:8810")
+		val theMiniConfClient = new MiniConfClient("http://localhost:9000")
 		theMiniConfClient.getOneConfItem("g2", "k1")
 
 
 ### Register Data modified Listener
-		val theMiniConfClient = new MiniConfClient("http://localhost:8810")
+		val theMiniConfClient = new MiniConfClient("http://localhost:9000")
 		theMiniConfClient.registerListener("g2", "k1", {newValue => System.out.println("conf have modified "+newValue)})
 
 Features
 --------------
-1.use Akka HTTP to expose Rest Services;
+1.use Akka HTTP to expose Rest Services.
+
 2.use Akka Persistence to persist all configures in local.
+
 3.use Akka Distributed Data to disseminate configuration events between cluster nodes.
 
 License
