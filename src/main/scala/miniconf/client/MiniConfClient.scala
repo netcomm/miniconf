@@ -2,20 +2,21 @@ package miniconf.client
 
 import akka.actor.{ActorSystem}
 import java.util.concurrent.TimeUnit
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.marshalling.Marshal
+import akka.http.scaladsl.unmarshalling.Unmarshal
+import akka.stream.ActorMaterializer
+import com.typesafe.config.ConfigFactory
+
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import akka.io.IO
 import akka.pattern.ask
-import spray.http._
-import spray.can.Http
-import HttpMethods._
 import java.nio.charset.Charset
 import akka.util.Timeout
-import spray.httpx.RequestBuilding._
-import java.lang.String
-import scala.Predef.String
 import java.util.Calendar
-import akka.event.Logging
+import scala.util.{Success, Failure}
 
 /**
  * Created by wenzhi.bwz on 14-7-26.
@@ -25,7 +26,11 @@ object MiniConfClient {
 }
 
 class MiniConfClient(urlParm : String) {
-  implicit val system = ActorSystem("miniConfClient")
+  val customConf = ConfigFactory.parseString("""
+                                             """)
+
+  implicit val system = ActorSystem("miniConfClient", ConfigFactory.load(customConf))
+  implicit val materializer = ActorMaterializer()
   private implicit val timeout: Timeout = 5.seconds
   import system.dispatcher
 
@@ -65,33 +70,17 @@ class MiniConfClient(urlParm : String) {
 
   def demoRequestLevelApi(host: String)(implicit system: ActorSystem): Future[String] = {
     import system.dispatcher // execution context for future transformation below
-
     for {
-      response <- IO(Http).ask(HttpRequest(GET, Uri(host))).mapTo[HttpResponse]
-      // maybe is spray bug. if use CloseAll then timeout is often occur!!!
-      // _ <- IO(Http) ? Http.CloseAll
-    } yield {
-      if (response.status.intValue == 404)
-      {
-        throw new Exception(response.entity.data.asString(Charset.forName("UTF-8")))
-      }
-      response.entity.data.asString(Charset.forName("UTF-8"))
-    }
+      response <- Http().singleRequest(HttpRequest(HttpMethods.GET, uri = host))
+      entity <- Unmarshal(response.entity).to[String]
+    } yield entity
   }
 
   def demoRequestLevelApi_post(host: String, dataParm : String)(implicit system: ActorSystem): Future[String] = {
     import system.dispatcher // execution context for future transformation below
-
     for {
-      response <-  IO(Http).ask(HttpRequest(POST, Uri(host), Nil, HttpEntity(MediaTypes.`application/json`, dataParm))).mapTo[HttpResponse]
-      // maybe is spray bug. if use CloseAll then timeout is often occur!!!
-      // _ <- IO(Http) ? Http.CloseAll
-    } yield {
-      if (response.status.intValue == 404)
-      {
-        throw new Exception(response.entity.data.asString(Charset.forName("UTF-8")))
-      }
-      response.entity.data.asString(Charset.forName("UTF-8"))
-    }
+      response <- Http().singleRequest(HttpRequest(HttpMethods.POST, uri = host, entity = HttpEntity(ContentTypes.`application/json`, dataParm)))
+      entity <- Unmarshal(response.entity).to[String]
+    } yield entity
   }
 }
