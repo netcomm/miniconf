@@ -89,6 +89,9 @@ Release Notes
 * use Multi Node Testing to do integration test.
 * use Akka 2.4.1.
 
+### 0.3 (2017-6)
+* use Akka 2.5.1 and akka http 10.0.5
+
 License
 --------------
 This code is open source software licensed under the Apache 2.0 License.
