@@ -3,16 +3,13 @@ package miniconf.server
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.model._
 import StatusCodes._
-import akka.http.scaladsl.server.Directives
-import akka.stream.{Materializer}
-import akka.http.scaladsl.Http
-import akka.stream.scaladsl.ImplicitMaterializer
-import akka.actor.{ActorLogging, Actor, ActorRef, Props, Status}
+import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.unmarshalling._
+import akka.actor._
 import miniconf.server.persistence.MiniConfPersistActor.{DeleteCmd, Cmd}
 
 import miniconf.server.persistence.{MiniConfPersistActor}
 import miniconf.server.replicator.ReplicatedService
-import scala.concurrent.ExecutionContext
 import spray.json.DefaultJsonProtocol
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import spray.json._
@@ -44,14 +41,22 @@ object MainHttpService extends SprayJsonSupport {
     case class PaginationInfo(totalPageNum: Int, oneBatchItems: List[Array[String]])
 
     def generateConfItemKey(group: String, key: String): String = {group + "_" + key}
+
+    /*implicit val retrieveOneConfItemUM: FromRequestUnmarshaller[RetrieveOneConfItem] = ???
+    implicit val checkDataModifyUM: FromRequestUnmarshaller[CheckDataModify] = ???
+    implicit val deleteCmdUM: FromRequestUnmarshaller[DeleteCmd] = ???
+    implicit val paginationInfoUM: FromRequestUnmarshaller[PaginationInfo] = ???
+    implicit val getPaginationUM: FromRequestUnmarshaller[GetPagination] = ???
+    implicit val oneConfItemUM: FromRequestUnmarshaller[OneConfItem] = ???*/
   }
 
   def props(interface: String, port: Int): Props =
     Props(new MainHttpService(interface, port))
 
   private def route(miniConfPersistActorParm: ActorRef, replicatedServiceActor : ActorRef,
-                    log : LoggingAdapter)(implicit ec: ExecutionContext, mat: Materializer) = {
-    import Directives._
+                    log : LoggingAdapter) = {
+    import akka.http.scaladsl.unmarshalling.FromRequestUnmarshaller
+    import akka.http.scaladsl.server.Directives._
     import akka.util.Timeout
     import scala.concurrent.duration._
 
@@ -138,16 +143,20 @@ object MainHttpService extends SprayJsonSupport {
   }
 }
 
-class MainHttpService(interface: String, port: Int) extends Actor with ActorLogging with ImplicitMaterializer {
+class MainHttpService(interface: String, port: Int) extends Actor with ActorLogging {
   import MainHttpService._
   import context.dispatcher
+  import akka.http.scaladsl.Http
+  import akka.stream.ActorMaterializer
+
+  implicit val system = context.system
+  implicit val materializer = ActorMaterializer()
 
   val replicatedServiceActor = context.actorOf(Props[ReplicatedService], name = "replicatedServiceActor")
   val miniConfPersistActor = context.actorOf(
     Props(classOf[MiniConfPersistActor], replicatedServiceActor), "miniConfPersistActor")
 
-  Http(context.system)
-    .bindAndHandle(route(miniConfPersistActor, replicatedServiceActor, log), interface, port)
+  Http().bindAndHandle(Route.handlerFlow(route(miniConfPersistActor, replicatedServiceActor, log)), interface, port)
 
   override def receive = {
     case Http.ServerBinding(address) => log.info("Listening on {}", address)

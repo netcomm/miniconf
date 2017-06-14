@@ -1,39 +1,42 @@
 import com.typesafe.sbt.SbtMultiJvm
 import com.typesafe.sbt.SbtMultiJvm.MultiJvmKeys.MultiJvm
 
-val akkaV = "2.4.1"
-val akkaHttpVersion   = "2.0-M1"
+val akkaVersion = "2.5.1"
+val akkaHttpVersion = "10.0.6"
 
 val project = Project(
   id = "akkaDistributedData",
   base = file("."),
   settings = Project.defaultSettings ++ SbtMultiJvm.multiJvmSettings ++ Seq(
-    name := "akkaDistributedData",
-    version := "0.0.1-SNAPSHOT",
-    scalaVersion := "2.11.7",
-    externalResolvers := Seq("maven proxy repo" at "http://repo.spray.io",
-      //"Typesafe Repository" at "https://app.camunda.com/nexus/content/groups/public/"
-      "Typesafe Repository" at "http://mvnrepository.com/artifact",
-      "Logback" at "http://mirrors.ibiblio.org/maven2/",
-      "central.maven" at "http://central.maven.org/maven2"
-    ),
+    name := "akkaDistributedData-scala",
+    organization := "netcomm",
+    version := "1.0",
+    scalaVersion := "2.11.11",
     libraryDependencies ++= Seq(
-      "ch.qos.logback"    %   "logback-classic"  % "1.0.12",
       "io.spray"          %%  "spray-json"   % "1.3.2",
-      "com.typesafe.akka" % "akka-stream-experimental_2.11" % "2.0-M1",
-      "com.typesafe.akka" %% "akka-distributed-data-experimental" % akkaV,
-      "com.typesafe.akka" %% "akka-persistence-query-experimental" % akkaV,
-      "com.typesafe.akka" %% "akka-cluster-sharding"              % akkaV,
-      "com.typesafe.akka" %% "akka-http-experimental"             % akkaHttpVersion,
-      "com.typesafe.akka" %% "akka-http-spray-json-experimental"  % akkaHttpVersion,
-      "org.scala-lang"   % "scala-reflect"   % "2.11.7",
-      "de.heikoseeberger" %% "akka-log4j"    % "1.0.1",
-      "com.typesafe.akka" %%  "akka-testkit"  % akkaV,
-      "com.typesafe.akka" %% "akka-multi-node-testkit" % akkaV,
-      "org.scala-lang.modules"      % "scala-xml_2.11" % "1.0.4",
-      "org.iq80.leveldb"            % "leveldb"          % "0.7",
-      "org.fusesource.leveldbjni"   % "leveldbjni-all"   % "1.8",
-      "org.scalatest"     %%  "scalatest"     % "2.1.3"),
+      "com.typesafe.akka" %%  "akka-actor"              % akkaVersion,
+      "com.typesafe.akka" %%  "akka-stream"             % akkaVersion,
+      "com.typesafe.akka" %%  "akka-distributed-data"   % akkaVersion,
+      "com.typesafe.akka" %%  "akka-cluster-sharding"   % akkaVersion,
+      "com.typesafe.akka" %%  "akka-persistence-query"  % akkaVersion,
+      "com.typesafe.akka" %%  "akka-slf4j"              % akkaVersion,
+      "com.typesafe.akka" %%  "akka-remote"             % akkaVersion,
+      "com.typesafe.akka" %%  "akka-multi-node-testkit" % akkaVersion,
+      "com.typesafe.akka" %%  "akka-contrib"            % akkaVersion,
+      "com.typesafe.akka" %%  "akka-http"               % akkaHttpVersion,
+      "com.typesafe.akka" %%  "akka-http-spray-json"    % akkaHttpVersion,
+      "org.scala-lang.modules"      % "scala-xml_2.11"  % "1.0.4",
+      "org.iq80.leveldb"            % "leveldb"         % "0.7",
+      "org.fusesource.leveldbjni"   % "leveldbjni-all"  % "1.8",
+      "com.typesafe.akka" %%  "akka-testkit"            % akkaVersion,
+      "org.scalatest"     %  "scalatest_2.11"           % "2.1.3"
+    ),
+
+    dependencyOverrides ++= Set(
+      "com.typesafe.akka" %%  "akka-actor"              % akkaVersion,
+      "com.typesafe.akka" %%  "akka-stream"             % akkaVersion
+    ),
+
     // make sure that MultiJvm test are compiled by the default test compilation
     compile in MultiJvm <<= (compile in MultiJvm) triggeredBy (compile in Test),
     // disable parallel tests

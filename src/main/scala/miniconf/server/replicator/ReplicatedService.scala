@@ -24,8 +24,8 @@ class ReplicatedService extends Actor with ActorLogging {
   val replicator = DistributedData(context.system).replicator
   implicit val cluster = Cluster(context.system)
 
-  def dataKey(entryKey: String): LWWMapKey[Any] =
-    LWWMapKey("cache-" + math.abs(entryKey.hashCode) % 100)
+  def dataKey(entryKey: String): LWWMapKey[String, OneConfItem] =
+    LWWMapKey[String, OneConfItem]("cache-" + math.abs(entryKey.hashCode) % 100)
 
   def receive = {
     case theEvt : Evt =>
@@ -39,7 +39,7 @@ class ReplicatedService extends Actor with ActorLogging {
       replicator ! Get(dataKey(tmpKey), ReadLocal, Some(RetrieveOneConfItemRequest(tmpKey, sender())))
     case g @ GetSuccess(LWWMapKey(_), Some(RetrieveOneConfItemRequest(key, replyTo))) =>
       g.dataValue match {
-        case data: LWWMap[_] => data.get(key) match {
+        case data: LWWMap[String, OneConfItem] => data.get(key) match {
           case Some(value) => replyTo ! value
           case None        => replyTo ! None
         }
@@ -52,7 +52,7 @@ class ReplicatedService extends Actor with ActorLogging {
     case g @ GetSuccess(LWWMapKey(_), Some(CheckDataModifyRequest(payload, replyTo))) =>
       val key = ServerService.generateConfItemKey(payload.group, payload.key)
       g.dataValue match {
-        case data: LWWMap[_] => data.get(key) match {
+        case data: LWWMap[String, OneConfItem] => data.get(key) match {
           case Some(value) => if (value.asInstanceOf[OneConfItem].value == payload.value) replyTo ! ""
             else replyTo ! value.asInstanceOf[OneConfItem].value
           case None        => replyTo ! ""
@@ -72,7 +72,7 @@ class ReplicatedService extends Actor with ActorLogging {
       val tmpCurPageNum = Integer.parseInt(payload.curPageNum)
       var tmpList : List[Array[String]] = List.empty
       g.dataValue match {
-        case data: LWWMap[_] =>
+        case data: LWWMap[String, OneConfItem] =>
           val tmpMapDetail = data.entries
           log.info("GetSuccess tmpMapDetail")
           tmpList = tmpMapDetail.foldLeft(tmpList){
